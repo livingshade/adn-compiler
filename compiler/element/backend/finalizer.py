@@ -140,12 +140,15 @@ def gen_template(
     with open(os.path.join(api_dir, "Cargo.toml"), "w") as f:
         f.write(api_toml.format(TemplateName=template_name_toml))
 
-    gen_attach_detach(toml_dir, {
-        "Me": template_name_first_cap,
-        "Prev": "Mrpc",
-        "Next": "TcpRpcAdapter",
-        "Group": "[\"MrpcEngine\", \"TcpRpcAdapterEngine\"]"
-    })
+    gen_attach_detach(
+        toml_dir,
+        {
+            "Me": template_name_first_cap,
+            "Prev": "Mrpc",
+            "Next": "TcpRpcAdapter",
+            "Group": '["MrpcEngine", "TcpRpcAdapterEngine"]',
+        },
+    )
 
     os.system(f"rustfmt --edition 2018  {config_path}")
     os.system(f"rustfmt --edition 2018  {lib_path}")
@@ -191,7 +194,7 @@ def finalize(name: str, ctx: RustContext, output_dir: str, placement: str):
         template_name_first_cap,
         template_name_all_cap,
     )
- 
+
 
 def gen_attach_detach(name: str, ctx):
     with open(f"{name}/attach.toml", "w") as f:

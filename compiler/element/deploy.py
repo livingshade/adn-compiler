@@ -34,11 +34,11 @@ def move_template(phoenix_dir, template_name):
     mrpc_plugin = phoenix_dir + "/experimental/mrpc/generated/plugin"
     mrpc_api = phoenix_dir + "/experimental/mrpc/generated/api"
     mrpc_toml = phoenix_dir + "/experimental/mrpc/generated/toml"
-    
+
     prefix_api = str(COMPILER_ROOT) + "/generated/api/" + template_name
     prefix_plugin = str(COMPILER_ROOT) + "/generated/plugin/" + template_name
     prefix_toml = str(COMPILER_ROOT) + "/generated/toml/" + template_name
-    
+
     os.system(f"mkdir -p {mrpc_api}")
     os.system(f"rm -rf {mrpc_api}/{template_name}")
     os.system(f"cp -r {original_api}/logging {mrpc_api}/{template_name}")
@@ -66,7 +66,7 @@ def move_template(phoenix_dir, template_name):
     os.system(f"mkdir -p {mrpc_toml}")
     os.system(f"rm -rf {mrpc_toml}/{template_name}")
     os.system(f"cp -r {prefix_toml} {mrpc_toml}/{template_name}")
-    
+
     LOG.info("Template {} moved to mrpc folder".format(template_name))
 
 

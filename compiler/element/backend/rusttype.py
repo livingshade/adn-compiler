@@ -193,7 +193,6 @@ RustGlobalFunctions = {
         RustBasicType("f64"),
         "pub fn Gen_min_f64(a: f64, b: f64) -> f64 { a.min(b) }",
     ),
-    
 }
 
 
