@@ -32,6 +32,13 @@ if __name__ == "__main__":
         required=False,
         default=False,
     )
+    parser.add_argument(
+        "-p",
+        "--placement",
+        help="Placement of the generated code",
+        required=True,
+        default="c",
+    )
 
     init_logging(True)
     # parser.add_argument("--verbose", help="Print Debug info", action="store_true")
@@ -47,16 +54,23 @@ if __name__ == "__main__":
     engine = args.engine
     verbose = args.verbose
     deploy = args.deploy
+    placement = args.placement
+    if placement == "c":
+        placement = "client"
+    elif placement == "s":
+        placement = "server"
+    else:
+        raise Exception("invalid Placement, c/s expected")
 
     # ret = compile_element(engine, verbose)
     # pprint(ret)
-    output_name = "gen" + engine + "server"
+    output_name = "gen" + engine + placement
     ret = gen_code(
         engine,
         output_name,
         str(COMPILER_ROOT) + "/generated",
         "mrpc",
-        "server",
+        placement,
         verbose,
     )
     if deploy:
