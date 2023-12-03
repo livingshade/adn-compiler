@@ -1,4 +1,4 @@
-# Element Compiler 
+# Element Compiler
 
 Element compiler convert match-action code to IR. From IR, we can infer the property (read/written, drop) for each NF and provide graph compiler with the information. Element compiler also generates backend code(mRPC) for each NF.
 
