@@ -12,7 +12,8 @@ from compiler.element.backend.finalizer import finalize
 from compiler.element.backend.rustgen import RustContext, RustGenerator
 from compiler.element.deploy import install, move_template
 from compiler.element.frontend import IRCompiler, Printer
-from compiler.element.logger import ELEMENT_LOG, init_logging
+from compiler.element.logger import ELEMENT_LOG as LOG
+from compiler.element.logger import init_logging
 from compiler.element.props.flow import FlowGraph
 
 if __name__ == "__main__":
@@ -62,8 +63,8 @@ if __name__ == "__main__":
     else:
         raise Exception("invalid Placement, c/s expected")
 
-    # ret = compile_element(engine, verbose)
-    # pprint(ret)
+    ret = compile_element_property(engine, verbose)
+    LOG.info(f"prop: {ret}")
     output_name = "gen" + engine + placement
     ret = gen_code(
         engine,
