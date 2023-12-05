@@ -57,6 +57,7 @@ size: "size()"
 op: "+" -> op_add
        | "-" -> op_sub
        | "*" -> op_mul
+       | "/" -> op_div
        | "&&" -> op_land
        | "||" -> op_lor
        | "==" -> op_eq

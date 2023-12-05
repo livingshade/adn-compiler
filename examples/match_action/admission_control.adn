@@ -9,13 +9,13 @@ internal {
 }
 
 fn init(multiplier) {
-	multiplier := 2
+	multiplier := 2;
 }
 
 fn req(rpc_req) {
-	total := total + 1;
+	requests := requests + 1;
 
-	prob := max(0, (requests - multiplier * accepts) / (requests + 1))
+	prob := max(0, (requests - multiplier * accepts) / (requests + 1));
 
 	match(randomf(0,1) < prob) {
 		true => {
@@ -30,7 +30,7 @@ fn req(rpc_req) {
 fn resp(rpc_resp) {
 	match(rpc_resp) {
 		Some(rpc_resp) => {
-			success = success + 1;
+			success := success + 1;
 			send(rpc_resp, APP);
 		}
 	};
