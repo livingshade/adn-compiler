@@ -180,6 +180,11 @@ RustGlobalFunctions = {
         [RustBasicType("f32"), RustBasicType("f32")],
         RustBasicType("f32"),
         "pub fn Gen_random_f32(l: f32, r: f32) -> f32 { rand::random::<f32>() }",
+    "random_f32": RustFunctionType(
+        "Gen_random_f32",
+        [RustBasicType("f32"), RustBasicType("f32")],
+        RustBasicType("f32"),
+        "pub fn Gen_random_f32(l: f32, r: f32) -> f32 { rand::random::<f32>() }",
     ),
     "min_u64": RustFunctionType(
         "Gen_min_u64",
