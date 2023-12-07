@@ -33,13 +33,13 @@ fn req(rpc_req) {
 }
 
 fn resp(rpc_resp) {
-	match(rpc_resp) {
-		Some(rpc_resp) => {
+	match(rpc_resp.get('meta_status') == 'success') {
+		true => {
 			send(rpc_resp, APP);
 		}
-		Some(err(msg)) => {
+		false => {
 			failure := failure + 1;
-			send(err(msg), APP);
+			send(err(''), APP);
 		}
 	};
 }

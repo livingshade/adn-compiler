@@ -193,6 +193,41 @@ RustGlobalFunctions = {
         RustBasicType("f64"),
         "pub fn Gen_min_f64(a: f64, b: f64) -> f64 { a.min(b) }",
     ),
+    "meta_id_readonly_tx": RustFunctionType(
+        "meta_id_readonly_tx",
+        [RustType("&RpcMessageTx")],
+        RustBasicType("u64"),
+        "pub fn meta_id_readonly_tx() -> u64 { 0 }",
+    ),
+    "meta_id_readonly_rx": RustFunctionType(
+        "meta_id_readonly_rx",
+        [RustType("&RpcMessageRx")],
+        RustBasicType("u64"),
+        "pub fn meta_id_readonly_rx() -> u64 { 0 }",
+    ),
+    "meta_status_readonly_tx": RustFunctionType(
+        "meta_status_readonly_tx",
+        [RustType("&RpcMessageTx")],
+        RustBasicType("String"),
+        """pub fn meta_status_readonly_tx() -> String { 
+            
+        }""",
+    ),
+    "meta_status_readonly_rx": RustFunctionType(
+        "meta_status_readonly_rx",
+        [RustType("&RpcMessageRx")],
+        RustBasicType("String"),
+        """pub fn meta_status_readonly_rx(msg: &RpcMessageRx) -> String { 
+            let meta: &phoenix_api::rpc::MessageMeta = unsafe { &*msg.meta.as_ptr() };
+            if meta.status_code == StatusCode::Success {
+                "success"
+            } else {
+                "failure"
+            }
+        }
+        """,
+    ),
+
 }
 
 

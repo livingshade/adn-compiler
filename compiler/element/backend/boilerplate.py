@@ -92,7 +92,7 @@ pub fn init_addon(config_string: Option<&str>) -> InitFnResult<Box<dyn PhoenixAd
 module_sender_rs = """
 use anyhow::{{bail, Result}};
 use nix::unistd::Pid;
-
+use phoenix_api::rpc::{{RpcId, StatusCode, TransportStatus}};
 use phoenix_common::addon::{{PhoenixAddon, Version}};
 use phoenix_common::engine::datapath::DataPathNode;
 use phoenix_common::engine::{{Engine, EngineType}};
@@ -199,7 +199,8 @@ impl PhoenixAddon for {TemplateNameFirstCap}Addon {{
 module_receiver_rs = """
 use anyhow::{{bail, Result}};
 use nix::unistd::Pid;
-
+use phoenix_api::rpc::{{RpcId, StatusCode, TransportStatus}};
+use phoenix_api::rpc::{{RpcId, StatusCode, TransportStatus}};
 use phoenix_common::engine::datapath::meta_pool::MetaBufferPool;
 use phoenix_common::addon::{{PhoenixAddon, Version}};
 use phoenix_common::engine::datapath::DataPathNode;
@@ -310,6 +311,7 @@ impl PhoenixAddon for {TemplateNameFirstCap}Addon {{
 engine_sender_rs = """
 use anyhow::{{anyhow, Result}};
 use futures::future::BoxFuture;
+use phoenix_api::rpc::{{RpcId, StatusCode, TransportStatus}};
 use phoenix_api::rpc::{{RpcId, TransportStatus}};
 use std::fmt;
 use std::fs::File;
@@ -455,15 +457,29 @@ impl {TemplateNameCap}Engine {{
 }}
 
 #[inline]
-fn materialize_nocopy(msg: &RpcMessageTx) -> &{ProtoRpcRequestType} {{
+fn materialize_nocopy_tx(msg: &RpcMessageTx) -> &{ProtoRpcRequestType} {{
     let req_ptr = msg.addr_backend as *mut {ProtoRpcRequestType};
     let req = unsafe {{ req_ptr.as_ref().unwrap() }};
     return req;
 }}
 
 #[inline]
-fn materialize_nocopy_mutable(msg: &RpcMessageTx) -> &mut {ProtoRpcRequestType} {{
+fn materialize_nocopy_mutable_tx(msg: &RpcMessageTx) -> &mut {ProtoRpcRequestType} {{
     let req_ptr = msg.addr_backend as *mut {ProtoRpcRequestType};
+    let req = unsafe {{ req_ptr.as_mut().unwrap() }};
+    return req;
+}}
+
+#[inline]
+fn materialize_nocopy_rx(msg: &RpcMessageRx) -> &{ProtoRpcRequestType} {{
+    let req_ptr = Unique::new(msg.addr_backend as *mut {ProtoRpcRequestType}).unwrap();
+    let req = unsafe {{ req_ptr.as_ref() }};
+    return req;
+}}
+
+#[inline]
+fn materialize_nocopy_mutable_rx(msg: &RpcMessageRx) -> &{ProtoRpcRequestType} {{
+    let req_ptr = Unique::new(msg.addr_backend as *mut {ProtoRpcRequestType}).unwrap();
     let req = unsafe {{ req_ptr.as_mut().unwrap() }};
     return req;
 }}
@@ -476,8 +492,8 @@ impl {TemplateNameCap}Engine {{
             Ok(msg) => {{
                 match msg {{
                     EngineTxMessage::RpcMessage(msg) => {{
-                        let rpc_req = materialize_nocopy(&msg);
-                        let rpc_req_mut = materialize_nocopy_mutable(&msg);
+                        let rpc_req = materialize_nocopy_tx(&msg);
+                        let rpc_req_mut = materialize_nocopy_mutable_tx(&msg);
                         {RpcRequest}
                     }}
                     m => self.tx_outputs()[0].send(m)?,
@@ -497,8 +513,9 @@ impl {TemplateNameCap}Engine {{
                         self.rx_outputs()[0].send(EngineRxMessage::Ack(rpc_id, status))?;
                     }}
                     EngineRxMessage::RpcMessage(msg) => {{
+                        let rpc_resp = materialize_nocopy_rx(&msg);
+                        let rpc_resp_mut = materialize_nocopy_mutable_rx(&msg);
                         {RpcResponse}
-                        self.rx_outputs()[0].send(EngineRxMessage::RpcMessage(msg))?;
                     }}
                     m => self.rx_outputs()[0].send(m)?,
                 }}
@@ -671,18 +688,33 @@ impl {TemplateNameCap}Engine {{
 }}
 
 #[inline]
-fn materialize_nocopy(msg: &RpcMessageRx) -> &{ProtoRpcRequestType} {{
+fn materialize_nocopy_tx(msg: &RpcMessageTx) -> &{ProtoRpcRequestType} {{
     let req_ptr = msg.addr_backend as *mut {ProtoRpcRequestType};
     let req = unsafe {{ req_ptr.as_ref().unwrap() }};
     return req;
 }}
 
 #[inline]
-fn materialize_nocopy_mutable(msg: &RpcMessageRx) -> &mut {ProtoRpcRequestType} {{
+fn materialize_nocopy_mutable_tx(msg: &RpcMessageTx) -> &mut {ProtoRpcRequestType} {{
     let req_ptr = msg.addr_backend as *mut {ProtoRpcRequestType};
     let req = unsafe {{ req_ptr.as_mut().unwrap() }};
     return req;
 }}
+
+#[inline]
+fn materialize_nocopy_rx(msg: &RpcMessageRx) -> &{ProtoRpcRequestType} {{
+    let req_ptr = msg.addr_backend as *mut {ProtoRpcRequestType};
+    let req = unsafe {{ req_ptr.as_ref().unwrap() }};
+    return req;
+}}
+
+#[inline]
+fn materialize_nocopy_mutable_rx(msg: &RpcMessageRx) -> &mut {ProtoRpcRequestType} {{
+    let req_ptr = msg.addr_backend as *mut {ProtoRpcRequestType};
+    let req = unsafe {{ req_ptr.as_mut().unwrap() }};
+    return req;
+}}
+
 
 impl {TemplateNameCap}Engine {{
     fn check_input_queue(&mut self) -> Result<Status, DatapathError> {{
@@ -690,7 +722,8 @@ impl {TemplateNameCap}Engine {{
 
           match self.tx_inputs()[0].try_recv() {{
             Ok(msg) => {{
-                self.tx_outputs()[0].send(msg)?;
+                let rpc_resp = materialize_nocopy_tx(&msg);
+                let rpc_resp_mut = materialize_nocopy_mutable_tx(&msg);
                 {RpcResponse}
                 return Ok(Progress(1));
             }}
@@ -708,8 +741,8 @@ impl {TemplateNameCap}Engine {{
                         }}
                     }}
                     EngineRxMessage::RpcMessage(msg) => {{
-                        let rpc_req = materialize_nocopy(&msg);
-                        let rpc_req_mut = materialize_nocopy_mutable(&msg);
+                        let rpc_req = materialize_nocopy_rx(&msg);
+                        let rpc_req_mut = materialize_nocopy_mutable_rx(&msg);
                         {RpcRequest}
                     }}
                     EngineRxMessage::RecvError(_, _) => {{

@@ -24,18 +24,28 @@ def map_basic_type(name: str) -> RustType:
         return RustType(name)
 
 
-def proto_gen_get(rpc: str, args: List[str]) -> str:
+def proto_gen_get(rpc: str, placement: str, args: List[str]) -> str:
     assert len(args) == 1
     arg = args[0].strip('"')
+    if arg.startswith("meta"):
+        if (rpc == "rpc_req" and placement == "client") or (rpc == "rpc_resp" and placement == "server"):
+            return f"{arg}_readonly_tx(&{rpc})"
+        else:
+            return f"{arg}_readonly_rx(&{rpc})"
     if rpc == "rpc_req":
         return f"hello_HelloRequest_{arg}_readonly(&{rpc})"
     elif rpc == "rpc_resp":
         return f"hello_HelloResponse_{arg}_readonly(&{rpc})"
 
 
-def proto_gen_set(rpc: str, args: List[str]) -> str:
+def proto_gen_set(rpc: str, placement: str, args: List[str]) -> str:
     assert len(args) == 2
     arg1 = args[0].strip('"')
+    if arg1.startswith("meta"):
+        if (rpc == "rpc_req" and placement == "client") or (rpc == "rpc_resp" and placement == "server"):
+            return f"{arg1}_write_tx({rpc}_mut, {args[1]})"
+        else:
+            return f"{arg1}_write_rx({rpc}_mut, {args[1]})"
     if rpc == "rpc_req":
         return f"hello_HelloRequest_{arg1}_modify({rpc}_mut, {args[1]}.as_bytes())"
     elif rpc == "rpc_resp":
@@ -183,7 +193,7 @@ class RustGenerator(Visitor):
         if node.stmt == None:
             return ";//NULL_STMT\n"
         else:
-            if isinstance(node.stmt, Expr):
+            if isinstance(node.stmt, Expr) or isinstance(node.stmt, Send):
                 return node.stmt.accept(self, ctx) + ";\n"
             else:
                 return node.stmt.accept(self, ctx)
@@ -309,9 +319,9 @@ class RustGenerator(Visitor):
                 args = [i.accept(ExprResolver(), None) for i in node.args]
                 match node.method:
                     case MethodType.GET:
-                        ret = proto_gen_get(var.name, args)
+                        ret = proto_gen_get(var.name, self.placement, args)
                     case MethodType.SET:
-                        ret = proto_gen_set(var.name, args)
+                        ret = proto_gen_set(var.name, self.placement, args)
                     case MethodType.DELETE:
                         raise Exception("delete is not supported in RPC")
                     case _:
@@ -384,7 +394,7 @@ class RustGenerator(Visitor):
                     """
                 elif node.msg.name == "rpc_resp":
                     inner = """
-                        let inner_gen = EngineRxMessage::RpcMessage(msg)
+                        let inner_gen = EngineRxMessage::RpcMessage(msg);
                     """
                 if ctx.current_func == FUNC_REQ:
                     if node.direction == "NET":
