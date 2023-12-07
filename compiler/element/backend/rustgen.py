@@ -29,9 +29,9 @@ def proto_gen_get(rpc: str, placement: str, args: List[str]) -> str:
     arg = args[0].strip('"')
     if arg.startswith("meta"):
         if (rpc == "rpc_req" and placement == "client") or (rpc == "rpc_resp" and placement == "server"):
-            return f"{arg}_readonly_tx(&{rpc})"
+            return f"{arg}_readonly_tx(&msg)"
         else:
-            return f"{arg}_readonly_rx(&{rpc})"
+            return f"{arg}_readonly_rx(&msg)"
     if rpc == "rpc_req":
         return f"hello_HelloRequest_{arg}_readonly(&{rpc})"
     elif rpc == "rpc_resp":
@@ -43,9 +43,9 @@ def proto_gen_set(rpc: str, placement: str, args: List[str]) -> str:
     arg1 = args[0].strip('"')
     if arg1.startswith("meta"):
         if (rpc == "rpc_req" and placement == "client") or (rpc == "rpc_resp" and placement == "server"):
-            return f"{arg1}_write_tx({rpc}_mut, {args[1]})"
+            return f"{arg1}_write_tx(&msg, {args[1]})"
         else:
-            return f"{arg1}_write_rx({rpc}_mut, {args[1]})"
+            return f"{arg1}_write_rx(&msg, {args[1]})"
     if rpc == "rpc_req":
         return f"hello_HelloRequest_{arg1}_modify({rpc}_mut, {args[1]}.as_bytes())"
     elif rpc == "rpc_resp":

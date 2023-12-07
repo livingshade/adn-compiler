@@ -180,11 +180,6 @@ RustGlobalFunctions = {
         [RustBasicType("f32"), RustBasicType("f32")],
         RustBasicType("f32"),
         "pub fn Gen_random_f32(l: f32, r: f32) -> f32 { rand::random::<f32>() }",
-    "random_f32": RustFunctionType(
-        "Gen_random_f32",
-        [RustBasicType("f32"), RustBasicType("f32")],
-        RustBasicType("f32"),
-        "pub fn Gen_random_f32(l: f32, r: f32) -> f32 { rand::random::<f32>() }",
     ),
     "min_u64": RustFunctionType(
         "Gen_min_u64",
@@ -214,15 +209,15 @@ RustGlobalFunctions = {
         "meta_status_readonly_tx",
         [RustType("&RpcMessageTx")],
         RustBasicType("String"),
-        """pub fn meta_status_readonly_tx() -> String { 
-            
+        """pub fn meta_status_readonly_tx() -> &'static str { 
+            "success"
         }""",
     ),
     "meta_status_readonly_rx": RustFunctionType(
         "meta_status_readonly_rx",
         [RustType("&RpcMessageRx")],
         RustBasicType("String"),
-        """pub fn meta_status_readonly_rx(msg: &RpcMessageRx) -> String { 
+        """pub fn meta_status_readonly_rx(msg: &RpcMessageRx) -> &'static str { 
             let meta: &phoenix_api::rpc::MessageMeta = unsafe { &*msg.meta.as_ptr() };
             if meta.status_code == StatusCode::Success {
                 "success"
