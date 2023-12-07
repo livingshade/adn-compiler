@@ -71,10 +71,10 @@ class IRTransformer(Transformer):
         return s[0]
 
     def statement(self, s):
-        if isinstance(s[0], Statement):
-            return s[0]
-        else:
+        if isinstance(s[0], Expr) or isinstance(s[0], Assign) or isinstance(s[0], Send):
             return Statement(s[0])
+        else:
+            return s[0]
 
     def assign(self, a) -> Assign:
         return Assign(a[0], a[1])

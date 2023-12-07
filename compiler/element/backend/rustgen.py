@@ -35,7 +35,7 @@ def proto_gen_get(rpc: str, placement: str, args: List[str]) -> str:
     if rpc == "rpc_req":
         return f"hello_HelloRequest_{arg}_readonly(&{rpc})"
     elif rpc == "rpc_resp":
-        return f"hello_HelloResponse_{arg}_readonly(&{rpc})"
+        return f"hello_HelloRequest_{arg}_readonly(&{rpc})"
 
 
 def proto_gen_set(rpc: str, placement: str, args: List[str]) -> str:
@@ -49,7 +49,7 @@ def proto_gen_set(rpc: str, placement: str, args: List[str]) -> str:
     if rpc == "rpc_req":
         return f"hello_HelloRequest_{arg1}_modify({rpc}_mut, {args[1]}.as_bytes())"
     elif rpc == "rpc_resp":
-        return f"hello_HelloResponse_{arg1}_modify({rpc}_mut, {args[1]}.as_bytes())"
+        return f"hello_HelloRequest_{arg1}_modify({rpc}_mut, {args[1]}.as_bytes())"
 
 
 class RustContext:
@@ -104,6 +104,10 @@ class RustContext:
                 return RustGlobalFunctions["min_f64"]
             case "time_diff":
                 return RustGlobalFunctions["time_diff"]
+            case "encrypt":
+                return RustGlobalFunctions["encrypt"]
+            case "decrypt":
+                return RustGlobalFunctions["decrypt"]
             case _:
                 LOG.error(f"unknown global function: {fname} in func_mapping")
                 raise Exception("unknown global function:", fname)
@@ -194,7 +198,8 @@ class RustGenerator(Visitor):
             return ";//NULL_STMT\n"
         else:
             if isinstance(node.stmt, Expr) or isinstance(node.stmt, Send):
-                return node.stmt.accept(self, ctx) + ";\n"
+                ret = node.stmt.accept(self, ctx) + ";\n"
+                return ret
             else:
                 return node.stmt.accept(self, ctx)
 
@@ -218,7 +223,10 @@ class RustGenerator(Visitor):
                 raise Exception(f"variable {name} not found")
             var = ctx.find_var(name)
             assert not var.temp and not var.rpc
-            var.init = value
+            if var.type.name == "String":
+                var.init = f"{value}.to_string()"
+            else:
+                var.init = value
             return ""
         elif ctx.current_func == FUNC_REQ or ctx.current_func == FUNC_RESP:
             if ctx.find_var(name) == None:
@@ -299,11 +307,13 @@ class RustGenerator(Visitor):
     def visitFuncCall(self, node: FuncCall, ctx) -> str:
         fn_name = node.name.name
         fn: RustFunctionType = ctx.func_mapping(fn_name)
-        LOG.info(f"func_call: {fn_name} {fn}")
         types = fn.args
         args = [f"{i.accept(self, ctx)}" for i in node.args if i is not None]
         for idx, ty in enumerate(types):
-            args[idx] = f"({args[idx]} as {ty.name})"
+            if ty.name == "&str":
+                args[idx] = f"&{args[idx]}"
+            else:
+                args[idx] = f"({args[idx]} as {ty.name})"
         ret = fn.gen_call(args)
 
         return ret
@@ -357,7 +367,6 @@ class RustGenerator(Visitor):
     def visitSend(self, node: Send, ctx) -> str:
         if ctx.current_func == "unknown" or ctx.current_func == "init":
             raise Exception("send not in function")
-
         if isinstance(node.msg, Error):
             # handle drop
             if self.placement == "client":
@@ -417,7 +426,7 @@ class RustGenerator(Visitor):
                     """
                 elif node.msg.name == "rpc_resp":
                     inner = """
-                        let inner_gen = EngineTxMessage::RpcMessage(msg)
+                        let inner_gen = EngineTxMessage::RpcMessage(msg);
                     """
                 if ctx.current_func == FUNC_REQ:
                     if node.direction == "NET":

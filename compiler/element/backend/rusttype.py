@@ -157,6 +157,22 @@ class RustVariable:
 
 
 RustGlobalFunctions = {
+    "encrypt": RustFunctionType(
+        "Gen_encrypt",
+        [RustType("&str"), RustType("&str")],
+        RustBasicType("String"),
+        """pub fn Gen_encrypt(a: &str, b: &str) -> String {
+            a.to_string()
+        }""",
+    ),
+    "decrypt": RustFunctionType(
+        "Gen_decrypt",
+        [RustType("&str"), RustType("&str")],
+        RustBasicType("String"),
+        """pub fn Gen_decrypt(a: &str, b: &str) -> String { 
+            a.to_string()
+        }""",
+    ),
     "update_window": RustFunctionType(
         "Gen_update_window",
         [RustBasicType("u64"), RustBasicType("u64")],

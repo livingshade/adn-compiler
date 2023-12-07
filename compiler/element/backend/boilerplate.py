@@ -200,7 +200,6 @@ module_receiver_rs = """
 use anyhow::{{bail, Result}};
 use nix::unistd::Pid;
 use phoenix_api::rpc::{{RpcId, StatusCode, TransportStatus}};
-use phoenix_api::rpc::{{RpcId, StatusCode, TransportStatus}};
 use phoenix_common::engine::datapath::meta_pool::MetaBufferPool;
 use phoenix_common::addon::{{PhoenixAddon, Version}};
 use phoenix_common::engine::datapath::DataPathNode;
@@ -721,9 +720,14 @@ impl {TemplateNameCap}Engine {{
 
           match self.tx_inputs()[0].try_recv() {{
             Ok(msg) => {{
-                let rpc_resp = materialize_nocopy_tx(&msg);
-                let rpc_resp_mut = materialize_nocopy_mutable_tx(&msg);
-                {RpcResponse}
+                match msg {{
+                    EngineTxMessage::RpcMessage(msg) => {{
+                        let rpc_resp = materialize_nocopy_tx(&msg);
+                        let rpc_resp_mut = materialize_nocopy_mutable_tx(&msg);
+                        {RpcResponse}
+                    }}
+                    m => self.tx_outputs()[0].send(m)?,
+                }}
                 return Ok(Progress(1));
             }}
             Err(TryRecvError::Empty) => {{}}
