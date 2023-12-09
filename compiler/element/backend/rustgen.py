@@ -28,7 +28,9 @@ def proto_gen_get(rpc: str, placement: str, args: List[str]) -> str:
     assert len(args) == 1
     arg = args[0].strip('"')
     if arg.startswith("meta"):
-        if (rpc == "rpc_req" and placement == "client") or (rpc == "rpc_resp" and placement == "server"):
+        if (rpc == "rpc_req" and placement == "client") or (
+            rpc == "rpc_resp" and placement == "server"
+        ):
             return f"{arg}_readonly_tx(&msg)"
         else:
             return f"{arg}_readonly_rx(&msg)"
@@ -42,7 +44,9 @@ def proto_gen_set(rpc: str, placement: str, args: List[str]) -> str:
     assert len(args) == 2
     arg1 = args[0].strip('"')
     if arg1.startswith("meta"):
-        if (rpc == "rpc_req" and placement == "client") or (rpc == "rpc_resp" and placement == "server"):
+        if (rpc == "rpc_req" and placement == "client") or (
+            rpc == "rpc_resp" and placement == "server"
+        ):
             return f"{arg1}_write_tx(&msg, {args[1]})"
         else:
             return f"{arg1}_write_rx(&msg, {args[1]})"

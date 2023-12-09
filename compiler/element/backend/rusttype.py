@@ -166,19 +166,19 @@ RustGlobalFunctions = {
             for (x, y) in a.bytes().zip(b.bytes()) {
                 ret.push((x ^ y) as char);
             }
-            ret       
+            ret
         }""",
     ),
     "decrypt": RustFunctionType(
         "Gen_decrypt",
         [RustType("&str"), RustType("&str")],
         RustBasicType("String"),
-        """pub fn Gen_decrypt(a: &str, b: &str) -> String { 
+        """pub fn Gen_decrypt(a: &str, b: &str) -> String {
             let mut ret = String::new();
             for (x, y) in a.bytes().zip(b.bytes()) {
                 ret.push((x ^ y) as char);
             }
-            ret        
+            ret
     }""",
     ),
     "update_window": RustFunctionType(
@@ -233,7 +233,7 @@ RustGlobalFunctions = {
         "meta_status_readonly_tx",
         [RustType("&RpcMessageTx")],
         RustBasicType("String"),
-        """pub fn meta_status_readonly_tx() -> &'static str { 
+        """pub fn meta_status_readonly_tx() -> &'static str {
             "success"
         }""",
     ),
@@ -241,7 +241,7 @@ RustGlobalFunctions = {
         "meta_status_readonly_rx",
         [RustType("&RpcMessageRx")],
         RustBasicType("String"),
-        """pub fn meta_status_readonly_rx(msg: &RpcMessageRx) -> &'static str { 
+        """pub fn meta_status_readonly_rx(msg: &RpcMessageRx) -> &'static str {
             let meta: &phoenix_api::rpc::MessageMeta = unsafe { &*msg.meta.as_ptr() };
             if meta.status_code == StatusCode::Success {
                 "success"
@@ -251,7 +251,6 @@ RustGlobalFunctions = {
         }
         """,
     ),
-
 }
 
 
