@@ -162,7 +162,11 @@ RustGlobalFunctions = {
         [RustType("&str"), RustType("&str")],
         RustBasicType("String"),
         """pub fn Gen_encrypt(a: &str, b: &str) -> String {
-            a.to_string()
+            let mut ret = String::new();
+            for (x, y) in a.bytes().zip(b.bytes()) {
+                ret.push((x ^ y) as char);
+            }
+            ret       
         }""",
     ),
     "decrypt": RustFunctionType(
@@ -170,8 +174,12 @@ RustGlobalFunctions = {
         [RustType("&str"), RustType("&str")],
         RustBasicType("String"),
         """pub fn Gen_decrypt(a: &str, b: &str) -> String { 
-            a.to_string()
-        }""",
+            let mut ret = String::new();
+            for (x, y) in a.bytes().zip(b.bytes()) {
+                ret.push((x ^ y) as char);
+            }
+            ret        
+    }""",
     ),
     "update_window": RustFunctionType(
         "Gen_update_window",
