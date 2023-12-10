@@ -307,7 +307,7 @@ class DropAnalyzer(Visitor):
                     if isinstance(st.msg, Error):
                         return True
         return False
-        #todo! fixme
+        # todo! fixme
         raise Exception("Unreachable! Match should not appear in drop analyzer")
 
     def visitAssign(self, node: Assign, ctx) -> bool:

@@ -82,8 +82,8 @@ class RustContext:
         for (k, v) in self.name2var.items():
             if not v.temp:
                 new_dic[k] = v
-        self.name2var = new_dic            
-                
+        self.name2var = new_dic
+
     def push_code(self, code: str) -> None:
         if self.current_func == FUNC_INIT:
             self.init_code.append(code)
@@ -191,7 +191,7 @@ class RustGenerator(Visitor):
                 ctx.current_func = FUNC_RESP
             case _:
                 raise Exception("unknown function")
-        ctx.clear_temps();
+        ctx.clear_temps()
         if node.name != "init":
             ctx.declare(f"rpc_{node.name}", RustRpcType("req", []), False)
 
@@ -216,13 +216,13 @@ class RustGenerator(Visitor):
                 return node.stmt.accept(self, ctx)
 
     def visitMatch(self, node: Match, ctx: RustContext) -> str:
-        template = "match ("          
+        template = "match ("
         if isinstance(node.expr, Identifier):
             var = ctx.find_var(node.expr.name)
             if var.type.name == "String":
                 template += node.expr.accept(self, ctx) + ".as_str()"
         else:
-            template += node.expr.accept(self, ctx)  
+            template += node.expr.accept(self, ctx)
         template += ") {"
         for (p, s) in node.actions:
             leg = f"    {p.accept(self, ctx)} => {{"
@@ -264,7 +264,7 @@ class RustGenerator(Visitor):
     def visitPattern(self, node: Pattern, ctx):
         LOG.info(f"Pattern being visited, {node.value}")
         if isinstance(node.value, Identifier):
-            assert(node.some)
+            assert node.some
             name = node.value.name
             if ctx.find_var(name) == None:
                 ctx.declare(name, RustBasicType("String"), True)  # declare temp
