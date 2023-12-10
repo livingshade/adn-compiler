@@ -68,7 +68,7 @@ def compile_element_property(engine_name: str, verbose: bool = False) -> Dict:
                 "drop": req.drop,
                 "block": req.block,
                 "copy": req.copy,
-                "record": engine_name == "logging",
+                "record": engine_name in ["logging", "metrics"],
             },
             "response": {
                 "read": resp.read,
@@ -76,6 +76,6 @@ def compile_element_property(engine_name: str, verbose: bool = False) -> Dict:
                 "drop": resp.drop,
                 "block": resp.block,
                 "copy": resp.copy,
-                "record": engine_name == "logging",
+                "record": engine_name in ["logging", "metrics"],
             },
         }
