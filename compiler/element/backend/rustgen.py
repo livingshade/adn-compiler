@@ -248,7 +248,20 @@ class RustGenerator(Visitor):
             raise Exception("unknown function")
 
     def visitPattern(self, node: Pattern, ctx):
-        return node.value.accept(self, ctx)
+        LOG.info(f"Pattern being visited, {node.value}")
+        if isinstance(node.value, Identifier):
+            assert(node.some)
+            name = node.value.name
+            if ctx.find_var(name) == None:
+                ctx.declare(name, RustType("unknown"), True)  # declare temp
+            else:
+                LOG.error("variable already defined should not appear in Some")
+                raise Exception(f"variable {name} already defined")
+            return f"Some({node.value.accept(self, ctx)})"
+        if node.some:
+            return f"Some({node.value.accept(self, ctx)})"
+        else:
+            return node.value.accept(self, ctx)
 
     def visitExpr(self, node: Expr, ctx):
         return f"({node.lhs.accept(self, ctx)} {node.op.accept(self, ctx)} {node.rhs.accept(self, ctx)})"

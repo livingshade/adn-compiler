@@ -20,11 +20,9 @@ parameters: "(" (parameter | parameter ",") *  ")"
 
 parameter: "rpc_req" | "rpc_resp" | identifier
 
-body: "{" stage* "}"
+body: "{" statement* "}"
 
-stage: statement | match
-
-statement: (expr | assign | primitive) ";"
+statement: (expr | assign | primitive | match) ";"
 
 primitive: "send" "(" (expr | err) "," ("APP" | "NET") ")"
 
@@ -35,6 +33,7 @@ match: "match" "(" expr ")" "{" action* "};"
 action: pattern "=>" "{" statement* "}"
 
 pattern: const
+        | "None" -> none_pattern
         | "Some" "(" (identifier | err) ")" -> some_pattern
 
 

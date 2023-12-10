@@ -87,10 +87,13 @@ class IRTransformer(Transformer):
         return (p, a[1:])
 
     def pattern(self, p) -> Pattern:
-        return Pattern(p[0])
+        return Pattern(p[0], False)
 
     def some_pattern(self, p) -> Pattern:
-        return Pattern(p[0])
+        return Pattern(p[0], True)
+
+    def none_pattern(self, p) -> Pattern:
+        return Pattern(Literal("None"), False)
 
     def expr(self, e) -> Expr:
         if len(e) == 1:

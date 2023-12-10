@@ -60,7 +60,7 @@ class RustVecType(RustType):
 
     def gen_get(self, args: List[str]) -> str:
         assert len(args) == 1
-        return f".get({args[0]}).unwrap()"
+        return f".get({args[0]})"
 
     def gen_set(self, args: List[str]) -> str:
         assert len(args) == 2
@@ -89,7 +89,7 @@ class RustMapType(RustType):
 
     def gen_get(self, args: List[str]) -> str:
         assert len(args) == 1
-        return f".get(&{args[0]}).unwrap()"
+        return f".get(&{args[0]})"
 
     def gen_set(self, args: List[str]) -> str:
         assert len(args) == 2
