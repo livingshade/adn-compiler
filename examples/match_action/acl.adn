@@ -18,6 +18,8 @@ fn req(rpc_req) {
 				'No' => {
 					send(err('acl'), APP);
 				}
+				_ => {
+				}
 			};
 		}
 		None => {

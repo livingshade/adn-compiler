@@ -28,7 +28,7 @@ primitive: "send" "(" (expr | err) "," ("APP" | "NET") ")"
 
 assign: identifier ":=" expr
 
-match: "match" "(" expr ")" "{" action* "};"
+match: "match" "(" expr ")" "{" action* "}"
 
 action: pattern "=>" "{" statement* "}"
 

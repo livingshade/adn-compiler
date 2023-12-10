@@ -77,6 +77,13 @@ class RustContext:
             if not temp and not var.rpc:
                 self.internal_states.append(var)
 
+    def clear_temps(self) -> None:
+        new_dic = {}
+        for (k, v) in self.name2var.items():
+            if not v.temp:
+                new_dic[k] = v
+        self.name2var = new_dic            
+                
     def push_code(self, code: str) -> None:
         if self.current_func == FUNC_INIT:
             self.init_code.append(code)
@@ -184,6 +191,7 @@ class RustGenerator(Visitor):
                 ctx.current_func = FUNC_RESP
             case _:
                 raise Exception("unknown function")
+        ctx.clear_temps();
         if node.name != "init":
             ctx.declare(f"rpc_{node.name}", RustRpcType("req", []), False)
 
@@ -208,8 +216,14 @@ class RustGenerator(Visitor):
                 return node.stmt.accept(self, ctx)
 
     def visitMatch(self, node: Match, ctx: RustContext) -> str:
-        template = "match ("
-        template += node.expr.accept(self, ctx) + ") {"
+        template = "match ("          
+        if isinstance(node.expr, Identifier):
+            var = ctx.find_var(node.expr.name)
+            if var.type.name == "String":
+                template += node.expr.accept(self, ctx) + ".as_str()"
+        else:
+            template += node.expr.accept(self, ctx)  
+        template += ") {"
         for (p, s) in node.actions:
             leg = f"    {p.accept(self, ctx)} => {{"
             for st in s:
@@ -253,7 +267,7 @@ class RustGenerator(Visitor):
             assert(node.some)
             name = node.value.name
             if ctx.find_var(name) == None:
-                ctx.declare(name, RustType("unknown"), True)  # declare temp
+                ctx.declare(name, RustBasicType("String"), True)  # declare temp
             else:
                 LOG.error("variable already defined should not appear in Some")
                 raise Exception(f"variable {name} already defined")
