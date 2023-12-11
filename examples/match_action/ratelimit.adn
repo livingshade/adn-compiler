@@ -13,7 +13,7 @@ fn init() {
 }
 
 fn req(rpc_req) {
-	token := min(limit, token + per_sec * time_diff(current_time(), last));
+	token := min(limit, token + (per_sec * time_diff(current_time(), last)));
 	last := current_time();
     match (token > 1.0) {
 		true => {
